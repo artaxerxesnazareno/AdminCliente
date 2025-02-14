@@ -94,25 +94,25 @@
                   <div id="w-node-_91f7b2e1-80e8-7878-3971-eea7037ec7d0-05726955">
                     <div class="list-item">
                       <div class="list-item-lable">Nome</div>
-                      <div class="list-item">Nome aqui neste local</div>
+                      <div class="list-item" th:text="${nome}">Nome aqui neste local</div>
                     </div>
                     <div class="list-item">
                       <div class="list-item-lable">Telemóvel</div>
-                      <div class="list-item">+244900900900</div>
+                      <div class="list-item" th:text="${telefone}">+244900900900</div>
                     </div>
                     <div class="list-item">
                       <div class="list-item-lable">Email</div>
-                      <div class="list-item">email@gmail.com</div>
+                      <div class="list-item" th:text="${email}">email@gmail.com</div>
                     </div>
                   </div>
                   <div id="w-node-f6e19744-e5cd-4063-4724-2efeb7351c05-05726955">
                     <div class="list-item">
                       <div class="list-item-lable">Tipo</div>
-                      <div class="list-item">Admin</div>
+                      <div class="list-item" th:text="${tipo}">Admin</div>
                     </div>
                     <div class="list-item">
                       <div class="list-item-lable">Último Login</div>
-                      <div class="list-item">12:00 | 6/12/2022</div>
+                      <div class="list-item" th:text="${#temporals.format(#temporals.createNow(), 'HH:mm | dd/MM/yyyy')}">12:00 | 6/12/2022</div>
                     </div>
                   </div>
                 </div>

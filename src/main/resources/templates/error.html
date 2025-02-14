@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Erro</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="css/normalize.css" rel="stylesheet" type="text/css">
+    <link href="css/components.css" rel="stylesheet" type="text/css">
+    <link href="css/cazio-app.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <div class="mother-div">
+        <div class="page-content-wrapper">
+            <div class="content">
+                <div class="container">
+                    <div class="error-container">
+                        <h1>Ops! Algo deu errado.</h1>
+                        <p th:text="${message}">Mensagem de erro aqui</p>
+                        <div th:if="${error}" class="error-details">
+                            <p th:text="${error}">Detalhes do erro aqui</p>
+                        </div>
+                        <div class="error-actions">
+                            <a href="javascript:history.back()" class="btn-voltar">Voltar</a>
+                            <a href="/" class="btn-home">Página Inicial</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -2,14 +2,14 @@ package org.example.admincliente.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -21,22 +21,36 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/usuarios/registro").permitAll()
-                .requestMatchers("/api/usuarios/admin/**").hasAnyRole("SUPERADMIN")
-                .requestMatchers("/api/usuarios/clientes/**").hasAnyRole("SUPERADMIN", "ADMIN")
+                .requestMatchers("/registro", "/login", "/css/**", "/js/**", "/images/**", "/fonts/**", "/webfonts/**").permitAll()
+                .requestMatchers("/admin/**").hasAnyRole("SUPERADMIN", "ADMIN")
+                .requestMatchers("/superadmin/**").hasRole("SUPERADMIN")
+                .requestMatchers("/cazio/utilizadores/perfil-do-utilizador").authenticated()
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults())
             .formLogin(form -> form
                 .loginPage("/login")
+                .loginProcessingUrl("/login")
+                .usernameParameter("email")
+                .passwordParameter("senha")
+                .defaultSuccessUrl("/cazio/utilizadores/perfil-do-utilizador", true)
+                .failureUrl("/login?error")
                 .permitAll()
             )
             .logout(logout -> logout
-                .permitAll()
+                .logoutUrl("/logout")
                 .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
             );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
