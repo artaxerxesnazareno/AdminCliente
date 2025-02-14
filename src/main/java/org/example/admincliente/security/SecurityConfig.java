@@ -10,6 +10,13 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.core.Authentication;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @Configuration
 @EnableWebSecurity
@@ -32,7 +39,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/login")
                 .usernameParameter("email")
                 .passwordParameter("senha")
-                .defaultSuccessUrl("/cazio/utilizadores/perfil-do-utilizador", true)
+                .successHandler(authenticationSuccessHandler())
                 .failureUrl("/login?error")
                 .permitAll()
             )
@@ -46,6 +53,23 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return new AuthenticationSuccessHandler() {
+            @Override
+            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                    Authentication authentication) throws IOException, ServletException {
+                
+                if (authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_SUPERADMIN")) ||
+                    authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+                    response.sendRedirect("/cazio/utilizadores/todos-utilizadores");
+                } else {
+                    response.sendRedirect("/cazio/utilizadores/perfil-do-utilizador");
+                }
+            }
+        };
     }
 
     @Bean

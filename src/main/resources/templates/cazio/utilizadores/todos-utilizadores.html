@@ -136,84 +136,33 @@
                         </div>
                       </div>
                     </div>
-                    <div class="table-row"><label class="w-checkbox table-checkbox-wrapper">
-                        <div class="w-checkbox-input w-checkbox-input--inputType-custom table-checkbox"></div><input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1"><span class="checkbox-lable hidden w-form-label" for="checkbox-2">Checkbox</span>
+                    <div class="table-row" th:each="usuario : ${utilizadores}">
+                      <label class="w-checkbox table-checkbox-wrapper">
+                        <div class="w-checkbox-input w-checkbox-input--inputType-custom table-checkbox"></div>
+                        <input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1">
+                        <span class="checkbox-lable hidden w-form-label" for="checkbox-2">Checkbox</span>
                       </label>
-                      <a href="../../cazio/utilizadores/perfil-do-utilizador.html" class="table-row-content item-link w-inline-block">
+                      <a th:href="@{/cazio/utilizadores/perfil-do-utilizador}" class="table-row-content item-link w-inline-block">
                         <div class="table-cell _10 i">
-                          <div class="table-image-wrapper"><img alt="" loading="lazy" src="../../images/Screen-Shot-2022-02-03-at-15.34.16.png" class="img is--contain utilizador"></div>
-                        </div>
-                        <div class="table-cell _20">
-                          <div class="table-cell-text">Elizabeth Daniel</div>
-                        </div>
-                        <div class="table-cell _15 i">
-                          <div class="table-cell-text">12/03/2022</div>
-                        </div>
-                        <div class="table-cell _15">
-                          <div class="table-cell-text">923 000 000</div>
-                        </div>
-                        <div class="table-cell _20 i">
-                          <div class="table-cell-text">email@domínio.com</div>
-                        </div>
-                        <div class="table-cell _20">
-                          <div class="table-cell-text _1">Admin</div>
-                        </div>
-                      </a>
-                      <div class="table-row-action-button-wrapper">
-                        <a href="#" class="table-action-button w-inline-block">
-                          <div class="icon _3-dots"><img width="12" alt="" src="../../images/3dots-gray.svg" loading="lazy" class="_3dots"></div>
-                        </a>
-                        <div class="flyout-menu-wrapper table-actions-flyout">
-                          <div class="flyout-menu-content in-table">
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">visibility</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Visualizar</div>
-                            </a>
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">edit</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Editar</div>
-                            </a>
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">Delete</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Eliminar</div>
-                            </a>
+                          <div class="table-image-wrapper">
+                            <img th:if="${usuario.imagem}" th:src="${usuario.imagem}" alt="" loading="lazy" class="img is--contain utilizador">
+                            <img th:unless="${usuario.imagem}" src="../../images/Screen-Shot-2022-02-03-at-15.34.16.png" alt="" loading="lazy" class="img is--contain utilizador">
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <div class="table-row"><label class="w-checkbox table-checkbox-wrapper">
-                        <div class="w-checkbox-input w-checkbox-input--inputType-custom table-checkbox"></div><input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1"><span class="checkbox-lable hidden w-form-label" for="checkbox-2">Checkbox</span>
-                      </label>
-                      <a href="../../cazio/utilizadores/perfil-do-utilizador.html" class="table-row-content item-link w-inline-block">
-                        <div class="table-cell _10 i">
-                          <div class="table-image-wrapper"><img alt="" loading="lazy" src="../../images/Screen-Shot-2022-02-03-at-15.34.16.png" class="img is--contain utilizador"></div>
-                        </div>
                         <div class="table-cell _20">
-                          <div class="table-cell-text">Elizabeth Daniel</div>
+                          <div class="table-cell-text" th:text="${usuario.nome}">Nome do Utilizador</div>
                         </div>
                         <div class="table-cell _15 i">
-                          <div class="table-cell-text">12/03/2022</div>
+                          <div class="table-cell-text" th:text="${#temporals.format(usuario.dataCriacao, 'dd/MM/yyyy')}">Data de Criação</div>
                         </div>
                         <div class="table-cell _15">
-                          <div class="table-cell-text">923 000 000</div>
+                          <div class="table-cell-text" th:text="${usuario.telefone}">Telefone</div>
                         </div>
                         <div class="table-cell _20 i">
-                          <div class="table-cell-text">email@domínio.com</div>
+                          <div class="table-cell-text" th:text="${usuario.email}">Email</div>
                         </div>
                         <div class="table-cell _20">
-                          <div class="table-cell-text _1">Operador</div>
+                          <div class="table-cell-text _1" th:text="${usuario.tipo}">Tipo</div>
                         </div>
                       </a>
                       <div class="table-row-action-button-wrapper">
@@ -222,7 +171,7 @@
                         </a>
                         <div class="flyout-menu-wrapper table-actions-flyout">
                           <div class="flyout-menu-content in-table">
-                            <a href="#" class="menu-item w-inline-block">
+                            <a th:href="@{/cazio/utilizadores/perfil-do-utilizador}" class="menu-item w-inline-block">
                               <div class="menu-icon-wrapper">
                                 <div class="icon menu-left-icon">
                                   <div class="main-font-icon">visibility</div>
@@ -230,64 +179,7 @@
                               </div>
                               <div class="button-text">Visualizar</div>
                             </a>
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">edit</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Editar</div>
-                            </a>
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">Delete</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Eliminar</div>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="table-row"><label class="w-checkbox table-checkbox-wrapper">
-                        <div class="w-checkbox-input w-checkbox-input--inputType-custom table-checkbox"></div><input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1"><span class="checkbox-lable hidden w-form-label" for="checkbox-2">Checkbox</span>
-                      </label>
-                      <a href="../../cazio/utilizadores/perfil-do-utilizador.html" class="table-row-content item-link w-inline-block">
-                        <div class="table-cell _10 i">
-                          <div class="table-image-wrapper"><img alt="" loading="lazy" src="../../images/Screen-Shot-2022-02-03-at-15.34.16.png" class="img is--contain utilizador"></div>
-                        </div>
-                        <div class="table-cell _20">
-                          <div class="table-cell-text">Elizabeth Daniel</div>
-                        </div>
-                        <div class="table-cell _15 i">
-                          <div class="table-cell-text">12/03/2022</div>
-                        </div>
-                        <div class="table-cell _15">
-                          <div class="table-cell-text">923 000 000</div>
-                        </div>
-                        <div class="table-cell _20 i">
-                          <div class="table-cell-text">email@domínio.com</div>
-                        </div>
-                        <div class="table-cell _20">
-                          <div class="table-cell-text _1">Admin</div>
-                        </div>
-                      </a>
-                      <div class="table-row-action-button-wrapper">
-                        <a href="#" class="table-action-button w-inline-block">
-                          <div class="icon _3-dots"><img width="12" alt="" src="../../images/3dots-gray.svg" loading="lazy" class="_3dots"></div>
-                        </a>
-                        <div class="flyout-menu-wrapper table-actions-flyout">
-                          <div class="flyout-menu-content in-table">
-                            <a href="#" class="menu-item w-inline-block">
-                              <div class="menu-icon-wrapper">
-                                <div class="icon menu-left-icon">
-                                  <div class="main-font-icon">visibility</div>
-                                </div>
-                              </div>
-                              <div class="button-text">Visualizar</div>
-                            </a>
-                            <a href="#" class="menu-item w-inline-block">
+                            <a th:href="@{/cazio/utilizadores/editar-utilizador}" class="menu-item w-inline-block">
                               <div class="menu-icon-wrapper">
                                 <div class="icon menu-left-icon">
                                   <div class="main-font-icon">edit</div>

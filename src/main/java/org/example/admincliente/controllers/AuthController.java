@@ -1,8 +1,12 @@
 package org.example.admincliente.controllers;
 
 import org.example.admincliente.dtos.LoginDTO;
+import org.example.admincliente.dtos.UsuarioDTO;
 import org.example.admincliente.dtos.UsuarioRegistroDTO;
+import org.example.admincliente.enums.TipoUsuario;
 import org.example.admincliente.services.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +24,8 @@ import jakarta.validation.Valid;
 
 @Controller
 public class AuthController {
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -29,6 +35,7 @@ public class AuthController {
 
     @GetMapping("/login")
     public String loginForm(Model model) {
+        logger.info("Acessando página de login");
         model.addAttribute("loginDTO", new LoginDTO());
         return "login";
     }
@@ -37,17 +44,42 @@ public class AuthController {
     public String login(@Valid @ModelAttribute LoginDTO loginDTO, 
                        BindingResult result,
                        RedirectAttributes redirectAttributes) {
+        logger.info("Tentativa de login para o email: {}", loginDTO.getEmail());
+        
         if (result.hasErrors()) {
+            logger.error("Erros de validação no formulário: {}", result.getAllErrors());
             return "login";
         }
 
         try {
+            logger.info("Iniciando autenticação com AuthenticationManager");
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getSenha())
             );
+            logger.info("Autenticação bem sucedida para o usuário: {}", authentication.getName());
+            
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return "redirect:/cazio/utilizadores/perfil-do-utilizador";
+            logger.info("SecurityContext atualizado com a autenticação");
+
+            // Busca o usuário para verificar o tipo
+            UsuarioDTO usuario = usuarioService.buscarPorEmail(loginDTO.getEmail())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+            // Log para debug
+            logger.info("Tipo do usuário: {}", usuario.getTipo());
+            logger.info("Autoridades do usuário: {}", authentication.getAuthorities());
+
+            // Redireciona com base no tipo do usuário
+            if (TipoUsuario.SUPERADMIN.equals(usuario.getTipo()) || 
+                TipoUsuario.ADMIN.equals(usuario.getTipo())) {
+                logger.info("Redirecionando admin/superadmin para lista de utilizadores");
+                return "redirect:/cazio/utilizadores/todos-utilizadores";
+            } else {
+                logger.info("Redirecionando cliente para perfil");
+                return "redirect:/cazio/utilizadores/perfil-do-utilizador";
+            }
         } catch (Exception e) {
+            logger.error("Erro durante o login", e);
             redirectAttributes.addFlashAttribute("error", "Email ou senha inválidos");
             return "redirect:/login";
         }
@@ -78,7 +110,7 @@ public class AuthController {
                 );
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 
-                // Redireciona diretamente para o perfil após o login bem-sucedido
+                // Cliente normal sempre vai para o perfil
                 return "redirect:/cazio/utilizadores/perfil-do-utilizador";
             } catch (Exception e) {
                 // Se o login automático falhar, redireciona para a página de login

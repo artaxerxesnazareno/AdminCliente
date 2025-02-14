@@ -1,10 +1,15 @@
 package org.example.admincliente.services;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.example.admincliente.dtos.UsuarioAtualizacaoDTO;
 import org.example.admincliente.dtos.UsuarioDTO;
 import org.example.admincliente.dtos.UsuarioRegistroDTO;
-import org.example.admincliente.dtos.UsuarioAtualizacaoDTO;
 import org.example.admincliente.entities.Usuario;
 import org.example.admincliente.enums.TipoUsuario;
+import org.example.admincliente.exceptions.BusinessException;
 import org.example.admincliente.exceptions.ResourceNotFoundException;
 import org.example.admincliente.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -50,6 +51,12 @@ public class UsuarioService {
     public void deletarAdmin(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin", id));
+                
+        // Verifica se é o superadmin root
+        if (usuario.getEmail().equals("root@admin.com")) {
+            throw new BusinessException("O superadmin root não pode ser excluído");
+        }
+        
         if (usuario.getTipo() != TipoUsuario.ADMIN) {
             throw new RuntimeException("Usuário não é um admin");
         }
@@ -60,6 +67,16 @@ public class UsuarioService {
     public UsuarioDTO atualizarAdmin(Long id, UsuarioAtualizacaoDTO atualizacaoDTO) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin", id));
+        
+        // Verifica se é o superadmin root
+        if (usuario.getEmail().equals("root@admin.com")) {
+            // Permite apenas atualizar a senha do root
+            if (atualizacaoDTO.getSenha() != null) {
+                usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+            }
+            // Não permite alterar outros dados do root
+            return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        }
         
         if (usuario.getTipo() != TipoUsuario.ADMIN) {
             throw new RuntimeException("Usuário não é um admin");
