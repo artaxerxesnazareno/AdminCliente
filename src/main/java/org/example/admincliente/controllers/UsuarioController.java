@@ -73,18 +73,6 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarioService.listarClientesPaginado(pageable));
     }
 
-    @GetMapping("/clientes/busca")
-    public ResponseEntity<List<UsuarioDTO>> buscarClientesPorNome(@RequestParam String nome) {
-        return ResponseEntity.ok(usuarioService.buscarPorNome(nome));
-    }
-
-    @GetMapping("/clientes/email/{email}")
-    public ResponseEntity<UsuarioDTO> buscarClientePorEmail(@PathVariable String email) {
-        return usuarioService.buscarPorEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     // Endpoints públicos e para clientes
     @PostMapping("/registro")
     public ResponseEntity<UsuarioDTO> registrarCliente(@Valid @RequestBody UsuarioRegistroDTO registroDTO) {

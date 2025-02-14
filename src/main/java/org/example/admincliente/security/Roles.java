@@ -1,4 +1,4 @@
-package org.example.admincliente.security;
+package com.admincliente.security;
 
 public class Roles {
     public static final String ROLE_SUPERADMIN = "ROLE_SUPERADMIN";
