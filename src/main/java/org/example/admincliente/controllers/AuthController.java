@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -78,7 +79,7 @@ public class AuthController {
                 logger.info("Redirecionando cliente para perfil");
                 return "redirect:/cazio/utilizadores/perfil-do-utilizador";
             }
-        } catch (Exception e) {
+        } catch (AuthenticationException e) {
             logger.error("Erro durante o login", e);
             redirectAttributes.addFlashAttribute("error", "Email ou senha inválidos");
             return "redirect:/login";
