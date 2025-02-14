@@ -1,6 +1,7 @@
 package org.example.admincliente.entities;
 
 import org.example.admincliente.enums.TipoUsuario;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -32,7 +33,11 @@ public class Usuario {
     @Column(name = "email", unique = true, nullable = false)
     private String email;
 
+    @JsonIgnore
+    @Column(name = "senha", nullable = false)
+    private String senha;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
     private TipoUsuario tipo;
-} 
+}
