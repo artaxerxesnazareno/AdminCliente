@@ -1,7 +1,8 @@
 package com.admincliente.security;
 
-import com.admincliente.entities.Usuario;
-import com.admincliente.repositories.UsuarioRepository;
+
+import org.example.admincliente.entities.Usuario;
+import org.example.admincliente.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

@@ -1,7 +1,7 @@
 package com.admincliente.controllers;
 
-import com.admincliente.entities.Usuario;
 import com.admincliente.services.UsuarioService;
+import org.example.admincliente.entities.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

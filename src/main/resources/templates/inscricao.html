@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      data-wf-page="6685d2b136a220cb0572696b" 
+      data-wf-site="6685d2b136a220cb057268d9">
+<head>
+  <meta charset="utf-8">
+  <title>Inscrição - Admin Cliente</title>
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link th:href="@{/css/normalize.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/css/components.css}" rel="stylesheet" type="text/css">
+  <link th:href="@{/css/cazio-app.css}" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({  google: {    families: ["Inter:300,regular,500,600,700","Barlow:100,200,300,regular,500,600,700,800,900"]  }});</script>
+</head>
+<body>
+  <div class="auth-bg">
+    <div class="auth-form-wrapper w-form">
+      <form id="registroForm" th:action="@{/api/auth/registro}" method="post" class="auth-form">
+        <div class="form-content">
+          <div class="form-header flex">
+            <div class="form-logo-wrapper">
+              <img th:src="@{/images/Cazio_logo.png}" loading="eager" alt="Logo Admin Cliente">
+            </div>
+          </div>
+          <div class="form-header">
+            <h1 class="pages-h2">Inscrição simplificada</h1>
+          </div>
+
+          <div th:if="${param.error}" class="alert alert-danger" role="alert">
+            <span th:text="${param.error}">Erro no registro</span>
+          </div>
+
+          <div class="form-field-wrapper-2">
+            <label for="nome" class="field-lable">Nome</label>
+            <input class="text-field w-input" 
+                   type="text" 
+                   id="nome" 
+                   name="nome" 
+                   required
+                   minlength="3"
+                   maxlength="100">
+          </div>
+
+          <div class="form-field-wrapper-2">
+            <label for="telefone" class="field-lable">Número de telemóvel</label>
+            <input class="text-field w-input" 
+                   type="tel" 
+                   id="telefone" 
+                   name="telefone">
+          </div>
+
+          <div class="form-field-wrapper-2">
+            <label for="email" class="field-lable">Email</label>
+            <input class="text-field w-input" 
+                   type="email" 
+                   id="email" 
+                   name="email" 
+                   required>
+          </div>
+
+          <div class="form-field-wrapper-2">
+            <label for="senha" class="field-lable">Senha</label>
+            <input class="text-field w-input" 
+                   type="password" 
+                   id="senha" 
+                   name="senha" 
+                   required
+                   minlength="8">
+            <small class="text-muted">
+              A senha deve conter pelo menos 8 caracteres, incluindo letra maiúscula, 
+              minúscula, número e caractere especial
+            </small>
+          </div>
+
+          <button type="submit" class="submit-button w-button">Criar Conta</button>
+
+          <div class="text-center mt-3">
+            <p>Já tem uma conta? <a th:href="@{/login}" class="text-primary">Faça login</a></p>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="auth-image-overlay"></div>
+  </div>
+
+  <!-- Custom JS -->
+  <script th:src="@{/js/cazio-app.js}"></script>
+</body>
+</html>

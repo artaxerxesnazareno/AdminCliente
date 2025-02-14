@@ -1,8 +1,9 @@
 package com.admincliente.services;
 
-import com.admincliente.entities.Usuario;
-import com.admincliente.enums.TipoUsuario;
-import com.admincliente.repositories.UsuarioRepository;
+
+import org.example.admincliente.entities.Usuario;
+import org.example.admincliente.enums.TipoUsuario;
+import org.example.admincliente.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
