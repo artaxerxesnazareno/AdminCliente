@@ -1,10 +1,11 @@
 package org.example.admincliente.dtos;
 
-import lombok.Data;
+import java.time.LocalDateTime;
+
 import org.example.admincliente.entities.Usuario;
 import org.example.admincliente.enums.TipoUsuario;
 
-import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 public class UsuarioDTO {
@@ -15,6 +16,7 @@ public class UsuarioDTO {
     private String imagem;
     private LocalDateTime dataCriacao;
     private TipoUsuario tipo;
+    private String senha;
 
     public static UsuarioDTO fromEntity(Usuario usuario) {
         UsuarioDTO dto = new UsuarioDTO();
@@ -25,6 +27,7 @@ public class UsuarioDTO {
         dto.setImagem(usuario.getImagem());
         dto.setDataCriacao(usuario.getDataCriacao());
         dto.setTipo(usuario.getTipo());
+        // Não enviamos a senha por questões de segurança
         return dto;
     }
 } 

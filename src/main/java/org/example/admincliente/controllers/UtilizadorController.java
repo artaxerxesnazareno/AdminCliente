@@ -14,8 +14,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/cazio/utilizadores")
@@ -89,6 +92,35 @@ public class UtilizadorController {
         } catch (Exception e) {
             logger.error("Erro ao carregar perfil do utilizador", e);
             throw e;
+        }
+    }
+
+    @GetMapping("/criar-utilizador")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public String exibirFormularioCriarUtilizador(Model model) {
+        try {
+            logger.info("Exibindo formulário de criação de utilizador");
+            model.addAttribute("usuarioDTO", new UsuarioDTO());
+            return "cazio/utilizadores/criar-utilizador";
+        } catch (Exception e) {
+            logger.error("Erro ao exibir formulário de criação de utilizador", e);
+            throw e;
+        }
+    }
+
+    @PostMapping("/criar-utilizador")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public String criarUtilizador(@ModelAttribute UsuarioDTO usuarioDTO, RedirectAttributes redirectAttributes) {
+        try {
+            logger.info("Iniciando criação de novo utilizador: {}", usuarioDTO.getEmail());
+            usuarioService.criarUsuario(usuarioDTO);
+            logger.info("Utilizador criado com sucesso: {}", usuarioDTO.getEmail());
+            redirectAttributes.addFlashAttribute("mensagem", "Utilizador criado com sucesso!");
+            return "redirect:/cazio/utilizadores/todos-utilizadores";
+        } catch (Exception e) {
+            logger.error("Erro ao criar utilizador", e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao criar utilizador: " + e.getMessage());
+            return "redirect:/cazio/utilizadores/criar-utilizador";
         }
     }
 } 
