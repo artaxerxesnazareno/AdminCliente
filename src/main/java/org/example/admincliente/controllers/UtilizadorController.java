@@ -1,11 +1,10 @@
 package org.example.admincliente.controllers;
 
-import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.example.admincliente.dtos.UsuarioDTO;
 import org.example.admincliente.dtos.UsuarioAtualizacaoDTO;
+import org.example.admincliente.dtos.UsuarioDTO;
 import org.example.admincliente.enums.TipoUsuario;
 import org.example.admincliente.exceptions.BusinessException;
 import org.example.admincliente.services.UsuarioService;
@@ -23,6 +22,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/cazio/utilizadores")
@@ -228,6 +229,32 @@ public class UtilizadorController {
             logger.error("Erro ao atualizar perfil", e);
             redirectAttributes.addFlashAttribute("erro", "Erro ao atualizar perfil: " + e.getMessage());
             return "redirect:/cazio/utilizadores/editar-perfil";
+        }
+    }
+
+    @GetMapping("/excluir/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public String excluirUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            logger.info("Iniciando exclusão do usuário ID: {}", id);
+            
+            // Busca o usuário para verificar o tipo
+            UsuarioDTO usuario = usuarioService.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            // Se for ADMIN, apenas SUPERADMIN pode excluir
+            if (TipoUsuario.ADMIN.equals(usuario.getTipo())) {
+                usuarioService.deletarAdmin(id);
+            } else {
+                usuarioService.deletarCliente(id);
+            }
+            
+            redirectAttributes.addFlashAttribute("mensagem", "Usuário excluído com sucesso!");
+            return "redirect:/cazio/utilizadores/todos-utilizadores";
+        } catch (Exception e) {
+            logger.error("Erro ao excluir usuário", e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao excluir usuário: " + e.getMessage());
+            return "redirect:/cazio/utilizadores/todos-utilizadores";
         }
     }
 } 

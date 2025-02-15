@@ -95,6 +95,9 @@
                     <div class="button-text quick-action-text">Editar</div>
                   </div>
                 </a>
+                <a th:href="@{/cazio/utilizadores/excluir/{id}(id=${id})}" 
+                   onclick="return confirm('Tem certeza que deseja excluir este usuário?')"
+                   class="botao w-button">Eliminar</a>
               </th:block>
             </div>
           </div>

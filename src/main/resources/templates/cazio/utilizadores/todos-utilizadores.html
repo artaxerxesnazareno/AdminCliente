@@ -187,7 +187,9 @@
                               </div>
                               <div class="button-text">Editar</div>
                             </a>
-                            <a href="#" class="menu-item w-inline-block">
+                            <a th:href="@{/cazio/utilizadores/excluir/{id}(id=${usuario.id})}" 
+                               onclick="return confirm('Tem certeza que deseja excluir este usuário?')"
+                               class="menu-item w-inline-block">
                               <div class="menu-icon-wrapper">
                                 <div class="icon menu-left-icon">
                                   <div class="main-font-icon">Delete</div>
