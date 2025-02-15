@@ -26,41 +26,15 @@
         <div data-animation="over-right" data-collapse="medium" data-duration="400" data-easing="ease" data-easing2="ease" role="banner" class="navbar w-nav">
           <div class="container _1">
             <a href="../../cazio/dashboard.html" class="brand w-nav-brand"></a>
-            <nav role="navigation" class="nav-menu w-nav-menu">
-              <div data-hover="false" data-delay="0" class="dropdown-3 w-dropdown">
-                <div class="dropdown-toggle-2 w-dropdown-toggle">
-                  <div class="icon-2 w-icon-dropdown-toggle"></div>
-                  <div>Subscrições</div>
-                </div>
-                <nav class="dropdown-list-3 w-dropdown-list">
-                  <a href="../../cazio/subscricao/criar-subscricao.html" class="link-inside-dropdown w-dropdown-link">Nova subscrição</a>
-                  <a href="../../cazio/subscricao/todas-subscricoes.html" class="link-inside-dropdown w-dropdown-link">Ver todas subscrições</a>
-                </nav>
-              </div>
-              <div data-hover="false" data-delay="0" class="dropdown-3 w-dropdown">
-                <div class="dropdown-toggle-2 w-dropdown-toggle">
-                  <div class="icon-2 w-icon-dropdown-toggle"></div>
-                  <div>Cadastro</div>
-                </div>
-                <nav class="dropdown-list-3 w-dropdown-list">
-                  <a href="../../cazio/produtos/todos-produtos.html" class="link-inside-dropdown w-dropdown-link">Artigos</a>
-                  <a href="../../cazio/categorias/todas-categorias.html" class="link-inside-dropdown w-dropdown-link">Categorias de artigos</a>
-                  <a href="../../cazio/clientes/todos-clientes.html" class="link-inside-dropdown w-dropdown-link">Clientes</a>
-                  <a href="../../cazio/clientes/todos-clientes.html" class="link-inside-dropdown w-dropdown-link">Fornecedores</a>
-                  <a href="../../cazio/bancos/todos-bancos.html" class="link-inside-dropdown w-dropdown-link">Contas bancárias</a>
-                  <a href="../../cazio/utilizadores/todos-utilizadores.html" class="link-inside-dropdown w-dropdown-link">Utilizadores do sistema</a>
-                </nav>
-              </div>
-              <div data-hover="false" data-delay="0" class="dropdown-3 w-dropdown">
-                <div class="dropdown-toggle-2 w-dropdown-toggle">
-                  <div class="icon-2 w-icon-dropdown-toggle"></div>
-                  <div>Configurações</div>
-                </div>
-                <nav class="dropdown-list-3 w-dropdown-list">
-                  <a href="../../cazio/configuracoes/configuracoes-gerais.html" class="link-inside-dropdown w-dropdown-link">Configurações gerais</a>
-                  <a href="../../index.html" class="link-inside-dropdown w-dropdown-link">Logout</a>
-                </nav>
-              </div>
+            <nav role="navigation" class="nav-menu w-nav-menu" style="display: flex; align-items: center; gap: 20px;">
+              <th:block th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''SUPERADMIN'')')}">
+                <a th:href="@{/cazio/utilizadores/todos-utilizadores}" class="link-nav">Utilizadores do sistema</a>
+              </th:block>
+              <a th:href="@{/cazio/utilizadores/perfil-do-utilizador}" class="link-nav">Meu Perfil</a>
+              <a th:href="@{/cazio/utilizadores/editar-perfil}" class="link-nav">Editar Perfil</a>
+              <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="link-nav" style="cursor: pointer; background: none; border: none;">Logout</button>
+              </form>
             </nav>
             <div class="menu-button w-nav-button">
               <div class="w-icon-nav-menu"></div>
