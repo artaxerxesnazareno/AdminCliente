@@ -241,7 +241,7 @@ public class UsuarioService {
         byte[] imageBytes = java.util.Base64.getDecoder().decode(imageData);
 
         // Cria o diretório de uploads se não existir
-        String uploadDir = System.getProperty("user.dir") + "/uploads/usuarios";
+        String uploadDir = "uploads/usuarios";
         File dir = new File(uploadDir);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -257,7 +257,7 @@ public class UsuarioService {
             fos.write(imageBytes);
         }
 
-        return "/uploads/usuarios/" + fileName; // Retorna o caminho relativo para salvar no banco
+        return "/" + filePath; // Retorna o caminho relativo para salvar no banco
     }
 
     private String salvarImagem(MultipartFile arquivo, String email) throws IOException {
@@ -266,7 +266,7 @@ public class UsuarioService {
         }
 
         // Cria o diretório de uploads se não existir
-        String uploadDir = System.getProperty("user.dir") + "/uploads/usuarios";
+        String uploadDir = "uploads/usuarios";
         File dir = new File(uploadDir);
         if (!dir.exists()) {
             dir.mkdirs();
@@ -281,7 +281,7 @@ public class UsuarioService {
         File destFile = new File(filePath);
         arquivo.transferTo(destFile);
 
-        return "/uploads/usuarios/" + fileName; // Retorna o caminho relativo para salvar no banco
+        return "/" + filePath; // Retorna o caminho relativo para salvar no banco
     }
 
     // Métodos de consulta com restrições de acesso
