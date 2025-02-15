@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.example.admincliente.entities.Usuario;
 import org.example.admincliente.enums.TipoUsuario;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.Data;
 
@@ -14,6 +15,8 @@ public class UsuarioDTO {
     private String email;
     private String telefone;
     private String imagem;
+    private String imagemBase64;
+    private MultipartFile imagemFile;
     private LocalDateTime dataCriacao;
     private TipoUsuario tipo;
     private String senha;

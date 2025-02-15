@@ -78,12 +78,24 @@
               <div class="text-block-130">Utilizador<br></div>
             </div>
             <div class="bot-o-ou-menu">
-              <a th:href="@{/cazio/utilizadores/editar-utilizador/{id}(id=${id})}" class="action-button w-inline-block">
-                <div class="icon quick-action">
-                  <div class="main-font-icon u">u</div>
-                  <div class="button-text quick-action-text">Editar</div>
-                </div>
-              </a>
+              <th:block th:if="${#authentication.principal.username == email || #authorization.expression('hasAnyRole(''ADMIN'', ''SUPERADMIN'')')}">
+                <a th:if="${#authentication.principal.username == email}" 
+                   th:href="@{/cazio/utilizadores/editar-perfil}" 
+                   class="action-button w-inline-block">
+                  <div class="icon quick-action">
+                    <div class="main-font-icon">u</div>
+                    <div class="button-text quick-action-text">Editar</div>
+                  </div>
+                </a>
+                <a th:if="${#authorization.expression('hasAnyRole(''ADMIN'', ''SUPERADMIN'')')}" 
+                   th:href="@{/cazio/utilizadores/editar-utilizador/{id}(id=${id})}" 
+                   class="action-button w-inline-block">
+                  <div class="icon quick-action">
+                    <div class="main-font-icon">u</div>
+                    <div class="button-text quick-action-text">Editar</div>
+                  </div>
+                </a>
+              </th:block>
             </div>
           </div>
           <div class="div-block-7">

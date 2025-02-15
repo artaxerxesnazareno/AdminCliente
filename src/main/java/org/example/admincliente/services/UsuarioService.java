@@ -1,10 +1,8 @@
 package org.example.admincliente.services;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @Transactional
@@ -76,29 +75,49 @@ public class UsuarioService {
 
     @PreAuthorize("hasRole('SUPERADMIN')")
     public UsuarioDTO atualizarAdmin(Long id, UsuarioAtualizacaoDTO atualizacaoDTO) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Admin", id));
-        
-        // Verifica se é o superadmin root
-        if (usuario.getEmail().equals("root@admin.com")) {
-            // Permite apenas atualizar a senha do root
+        try {
+            Usuario usuario = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Admin", id));
+            
+            // Verifica se é o superadmin root
+            if (usuario.getEmail().equals("root@admin.com")) {
+                // Permite apenas atualizar a senha do root
+                if (atualizacaoDTO.getSenha() != null) {
+                    usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+                }
+                // Não permite alterar outros dados do root
+                return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+            }
+            
+            if (usuario.getTipo() != TipoUsuario.ADMIN) {
+                throw new RuntimeException("Usuário não é um admin");
+            }
+
+            // Atualiza os campos permitidos
+            usuario.setNome(atualizacaoDTO.getNome());
+            usuario.setEmail(atualizacaoDTO.getEmail());
+            usuario.setTelefone(atualizacaoDTO.getTelefone());
+            
+            // Processa e atualiza a imagem se fornecida como arquivo
+            if (atualizacaoDTO.getImagemFile() != null && !atualizacaoDTO.getImagemFile().isEmpty()) {
+                String caminhoImagem = salvarImagem(atualizacaoDTO.getImagemFile(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            // Processa e atualiza a imagem se fornecida como base64
+            else if (atualizacaoDTO.getImagemBase64() != null && !atualizacaoDTO.getImagemBase64().isEmpty()) {
+                String caminhoImagem = salvarImagemBase64(atualizacaoDTO.getImagemBase64(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            
             if (atualizacaoDTO.getSenha() != null) {
                 usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
             }
-            // Não permite alterar outros dados do root
+
             return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        } catch (IOException e) {
+            logger.error("Erro ao processar imagem", e);
+            throw new BusinessException("Erro ao processar imagem do usuário");
         }
-        
-        if (usuario.getTipo() != TipoUsuario.ADMIN) {
-            throw new RuntimeException("Usuário não é um admin");
-        }
-
-        atualizacaoDTO.atualizarEntity(usuario);
-        if (atualizacaoDTO.getSenha() != null) {
-            usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
-        }
-
-        return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
     }
 
     // Métodos para ADMIN e SUPERADMIN
@@ -112,19 +131,39 @@ public class UsuarioService {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public UsuarioDTO atualizarCliente(Long id, UsuarioAtualizacaoDTO atualizacaoDTO) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
-        
-        if (usuario.getTipo() != TipoUsuario.CLIENTE) {
-            throw new RuntimeException("Usuário não é um cliente");
-        }
+        try {
+            Usuario usuario = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Cliente", id));
+            
+            if (usuario.getTipo() != TipoUsuario.CLIENTE) {
+                throw new RuntimeException("Usuário não é um cliente");
+            }
 
-        atualizacaoDTO.atualizarEntity(usuario);
-        if (atualizacaoDTO.getSenha() != null) {
-            usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
-        }
+            // Atualiza os campos permitidos
+            usuario.setNome(atualizacaoDTO.getNome());
+            usuario.setEmail(atualizacaoDTO.getEmail());
+            usuario.setTelefone(atualizacaoDTO.getTelefone());
+            
+            // Processa e atualiza a imagem se fornecida como arquivo
+            if (atualizacaoDTO.getImagemFile() != null && !atualizacaoDTO.getImagemFile().isEmpty()) {
+                String caminhoImagem = salvarImagem(atualizacaoDTO.getImagemFile(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            // Processa e atualiza a imagem se fornecida como base64
+            else if (atualizacaoDTO.getImagemBase64() != null && !atualizacaoDTO.getImagemBase64().isEmpty()) {
+                String caminhoImagem = salvarImagemBase64(atualizacaoDTO.getImagemBase64(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
 
-        return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+            if (atualizacaoDTO.getSenha() != null) {
+                usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+            }
+
+            return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        } catch (IOException e) {
+            logger.error("Erro ao processar imagem", e);
+            throw new BusinessException("Erro ao processar imagem do usuário");
+        }
     }
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
@@ -148,17 +187,101 @@ public class UsuarioService {
         return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
     }
 
-    @PreAuthorize("#id == authentication.principal.id")
     public UsuarioDTO atualizarProprioPerfil(Long id, UsuarioAtualizacaoDTO atualizacaoDTO) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário", id));
-        
-        atualizacaoDTO.atualizarEntity(usuario);
-        if (atualizacaoDTO.getSenha() != null) {
-            usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+        try {
+            // Obtém o usuário autenticado
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String emailAutenticado = auth.getName();
+            
+            Usuario usuario = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário", id));
+            
+            // Verifica se o usuário está tentando atualizar seu próprio perfil
+            if (!usuario.getEmail().equals(emailAutenticado)) {
+                throw new BusinessException("Você só pode atualizar seu próprio perfil");
+            }
+            
+            // Atualiza apenas os campos permitidos para o próprio usuário
+            usuario.setNome(atualizacaoDTO.getNome());
+            usuario.setTelefone(atualizacaoDTO.getTelefone());
+            
+            // Processa e atualiza a imagem se fornecida como arquivo
+            if (atualizacaoDTO.getImagemFile() != null && !atualizacaoDTO.getImagemFile().isEmpty()) {
+                String caminhoImagem = salvarImagem(atualizacaoDTO.getImagemFile(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            // Processa e atualiza a imagem se fornecida como base64
+            else if (atualizacaoDTO.getImagemBase64() != null && !atualizacaoDTO.getImagemBase64().isEmpty()) {
+                String caminhoImagem = salvarImagemBase64(atualizacaoDTO.getImagemBase64(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            
+            // Atualiza a senha se fornecida
+            if (atualizacaoDTO.getSenha() != null && !atualizacaoDTO.getSenha().isEmpty()) {
+                usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+            }
+            
+            return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        } catch (IOException e) {
+            logger.error("Erro ao processar imagem", e);
+            throw new BusinessException("Erro ao processar imagem do usuário");
+        }
+    }
+
+    private String salvarImagemBase64(String base64Image, String email) throws IOException {
+        if (base64Image == null || base64Image.isEmpty()) {
+            return null;
         }
 
-        return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        // Remove o prefixo do base64 se existir (ex: "data:image/jpeg;base64,")
+        String[] parts = base64Image.split(",");
+        String imageData = parts.length > 1 ? parts[1] : parts[0];
+
+        // Decodifica o base64
+        byte[] imageBytes = java.util.Base64.getDecoder().decode(imageData);
+
+        // Cria o diretório de uploads se não existir
+        String uploadDir = System.getProperty("user.dir") + "/uploads/usuarios";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // Gera um nome único para o arquivo
+        String fileName = email.replace("@", "_at_") + "_" + 
+                        LocalDateTime.now().toString().replace(":", "-") + ".jpg";
+        String filePath = uploadDir + "/" + fileName;
+
+        // Salva o arquivo
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(filePath)) {
+            fos.write(imageBytes);
+        }
+
+        return "/uploads/usuarios/" + fileName; // Retorna o caminho relativo para salvar no banco
+    }
+
+    private String salvarImagem(MultipartFile arquivo, String email) throws IOException {
+        if (arquivo == null || arquivo.isEmpty()) {
+            return null;
+        }
+
+        // Cria o diretório de uploads se não existir
+        String uploadDir = System.getProperty("user.dir") + "/uploads/usuarios";
+        File dir = new File(uploadDir);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        // Gera um nome único para o arquivo
+        String fileName = email.replace("@", "_at_") + "_" + 
+                        LocalDateTime.now().toString().replace(":", "-") + ".jpg";
+        String filePath = uploadDir + "/" + fileName;
+
+        // Salva o arquivo
+        File destFile = new File(filePath);
+        arquivo.transferTo(destFile);
+
+        return "/uploads/usuarios/" + fileName; // Retorna o caminho relativo para salvar no banco
     }
 
     // Métodos de consulta com restrições de acesso
@@ -184,43 +307,6 @@ public class UsuarioService {
                 .map(UsuarioDTO::fromEntity);
     }
 
-    private String salvarImagem(String base64Image, String email) {
-        try {
-            if (base64Image == null || base64Image.isEmpty()) {
-                return null;
-            }
-
-            // Remove o prefixo do base64 se existir (ex: "data:image/jpeg;base64,")
-            String[] parts = base64Image.split(",");
-            String imageData = parts.length > 1 ? parts[1] : parts[0];
-
-            // Decodifica o base64
-            byte[] imageBytes = Base64.getDecoder().decode(imageData);
-
-            // Cria o diretório de uploads se não existir
-            String uploadDir = "uploads/usuarios";
-            File dir = new File(uploadDir);
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
-
-            // Gera um nome único para o arquivo
-            String fileName = email.replace("@", "_at_") + "_" + 
-                            LocalDateTime.now().toString().replace(":", "-") + ".jpg";
-            String filePath = uploadDir + "/" + fileName;
-
-            // Salva o arquivo
-            try (FileOutputStream fos = new FileOutputStream(filePath)) {
-                fos.write(imageBytes);
-            }
-
-            return "/" + filePath; // Retorna o caminho relativo para salvar no banco
-        } catch (IOException e) {
-            logger.error("Erro ao salvar imagem", e);
-            throw new BusinessException("Erro ao processar imagem do usuário");
-        }
-    }
-
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
     public UsuarioDTO criarUsuario(UsuarioDTO usuarioDTO) {
         if (usuarioRepository.existsByEmail(usuarioDTO.getEmail())) {
@@ -242,12 +328,6 @@ public class UsuarioService {
         usuario.setTelefone(usuarioDTO.getTelefone());
         usuario.setTipo(usuarioDTO.getTipo());
         usuario.setDataCriacao(LocalDateTime.now());
-        
-        // Processa e salva a imagem se fornecida
-        if (usuarioDTO.getImagem() != null && !usuarioDTO.getImagem().isEmpty()) {
-            String caminhoImagem = salvarImagem(usuarioDTO.getImagem(), usuarioDTO.getEmail());
-            usuario.setImagem(caminhoImagem);
-        }
 
         // Usa a senha informada
         if (usuarioDTO.getSenha() == null || usuarioDTO.getSenha().isEmpty()) {
@@ -256,5 +336,40 @@ public class UsuarioService {
         usuario.setSenha(passwordEncoder.encode(usuarioDTO.getSenha()));
 
         return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public UsuarioDTO atualizarUsuario(Long id, UsuarioAtualizacaoDTO atualizacaoDTO) {
+        try {
+            Usuario usuario = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Usuário", id));
+            
+            // Atualiza os campos
+            usuario.setNome(atualizacaoDTO.getNome());
+            usuario.setEmail(atualizacaoDTO.getEmail());
+            usuario.setTelefone(atualizacaoDTO.getTelefone());
+            usuario.setTipo(atualizacaoDTO.getTipo());
+            
+            // Processa e atualiza a imagem se fornecida como arquivo
+            if (atualizacaoDTO.getImagemFile() != null && !atualizacaoDTO.getImagemFile().isEmpty()) {
+                String caminhoImagem = salvarImagem(atualizacaoDTO.getImagemFile(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            // Processa e atualiza a imagem se fornecida como base64
+            else if (atualizacaoDTO.getImagemBase64() != null && !atualizacaoDTO.getImagemBase64().isEmpty()) {
+                String caminhoImagem = salvarImagemBase64(atualizacaoDTO.getImagemBase64(), usuario.getEmail());
+                usuario.setImagem(caminhoImagem);
+            }
+            
+            // Atualiza a senha se fornecida
+            if (atualizacaoDTO.getSenha() != null && !atualizacaoDTO.getSenha().isEmpty()) {
+                usuario.setSenha(passwordEncoder.encode(atualizacaoDTO.getSenha()));
+            }
+            
+            return UsuarioDTO.fromEntity(usuarioRepository.save(usuario));
+        } catch (IOException e) {
+            logger.error("Erro ao processar imagem", e);
+            throw new BusinessException("Erro ao processar imagem do usuário");
+        }
     }
 } 

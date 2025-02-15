@@ -1,40 +1,42 @@
 package org.example.admincliente.dtos;
 
+import org.example.admincliente.enums.TipoUsuario;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.example.admincliente.entities.Usuario;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UsuarioAtualizacaoDTO {
     
-    @Size(min = 3, max = 100, message = "Nome deve ter entre 3 e 100 caracteres")
+    private Long id;
+    
+    @NotBlank(message = "O nome é obrigatório")
+    @Size(min = 3, max = 100, message = "O nome deve ter entre 3 e 100 caracteres")
     private String nome;
-
-    @Email(message = "Email deve ser válido")
-    private String email;
-
-    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
-    private String senha;
-
+    
+    @NotBlank(message = "O telefone é obrigatório")
     private String telefone;
-    private String imagem;
-
-    public void atualizarEntity(Usuario usuario) {
-        if (this.nome != null) {
-            usuario.setNome(this.nome);
-        }
-        if (this.email != null) {
-            usuario.setEmail(this.email);
-        }
-        if (this.senha != null) {
-            usuario.setSenha(this.senha);
-        }
-        if (this.telefone != null) {
-            usuario.setTelefone(this.telefone);
-        }
-        if (this.imagem != null) {
-            usuario.setImagem(this.imagem);
-        }
-    }
+    
+    @Email(message = "Email inválido")
+    private String email;
+    
+    private String senha;
+    
+    private String confirmacaoSenha;
+    
+    private String imagemBase64;
+    
+    @JsonIgnore
+    private MultipartFile imagemFile;
+    
+    private TipoUsuario tipo;
 } 

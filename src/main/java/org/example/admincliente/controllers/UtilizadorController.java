@@ -1,9 +1,13 @@
 package org.example.admincliente.controllers;
 
+import jakarta.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.example.admincliente.dtos.UsuarioDTO;
+import org.example.admincliente.dtos.UsuarioAtualizacaoDTO;
+import org.example.admincliente.enums.TipoUsuario;
+import org.example.admincliente.exceptions.BusinessException;
 import org.example.admincliente.services.UsuarioService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,6 +125,109 @@ public class UtilizadorController {
             logger.error("Erro ao criar utilizador", e);
             redirectAttributes.addFlashAttribute("erro", "Erro ao criar utilizador: " + e.getMessage());
             return "redirect:/cazio/utilizadores/criar-utilizador";
+        }
+    }
+
+    @GetMapping("/editar-utilizador/{id}")
+    public String exibirFormularioEditarUtilizador(@PathVariable Long id, Model model, Authentication authentication) {
+        try {
+            logger.info("Exibindo formulário de edição para o usuário ID: {}", id);
+            
+            // Busca o usuário logado
+            UsuarioDTO usuarioLogado = usuarioService.buscarPorEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            // Se for o próprio usuário tentando editar seu perfil, redireciona para a página correta
+            if (usuarioLogado.getId().equals(id)) {
+                return "redirect:/cazio/utilizadores/editar-perfil";
+            }
+            
+            // Se não for ADMIN nem SUPERADMIN, não pode editar outros usuários
+            if (!authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || 
+                                 a.getAuthority().equals("ROLE_SUPERADMIN"))) {
+                throw new BusinessException("Você não tem permissão para editar outros usuários");
+            }
+            
+            UsuarioDTO usuarioParaEditar = usuarioService.buscarPorId(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            // Se for ADMIN tentando editar outro ADMIN ou SUPERADMIN
+            if (usuarioLogado.getTipo() == TipoUsuario.ADMIN && 
+                (usuarioParaEditar.getTipo() == TipoUsuario.ADMIN || 
+                 usuarioParaEditar.getTipo() == TipoUsuario.SUPERADMIN)) {
+                throw new BusinessException("Você não tem permissão para editar este usuário");
+            }
+            
+            model.addAttribute("usuarioDTO", usuarioParaEditar);
+            return "cazio/utilizadores/editar-utilizador";
+        } catch (Exception e) {
+            logger.error("Erro ao exibir formulário de edição", e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/editar-perfil")
+    public String exibirFormularioEditarPerfil(Model model, Authentication authentication) {
+        try {
+            logger.info("Exibindo formulário de edição de perfil próprio");
+            
+            UsuarioDTO usuario = usuarioService.buscarPorEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            model.addAttribute("usuarioDTO", usuario);
+            return "cazio/utilizadores/editar-perfil";
+        } catch (Exception e) {
+            logger.error("Erro ao exibir formulário de edição de perfil", e);
+            throw e;
+        }
+    }
+
+    @PostMapping("/editar-utilizador/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public String atualizarUtilizador(@PathVariable Long id, @Valid @ModelAttribute UsuarioAtualizacaoDTO atualizacaoDTO, 
+                                     RedirectAttributes redirectAttributes, Authentication authentication) {
+        try {
+            logger.info("Atualizando usuário ID: {}", id);
+            
+            // Verifica permissões
+            UsuarioDTO usuarioLogado = usuarioService.buscarPorEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                
+            if (usuarioLogado.getTipo() == TipoUsuario.ADMIN && atualizacaoDTO.getTipo() == TipoUsuario.ADMIN) {
+                throw new BusinessException("ADMIN não pode editar outros ADMINs");
+            }
+            
+            usuarioService.atualizarUsuario(id, atualizacaoDTO);
+            redirectAttributes.addFlashAttribute("mensagem", "Usuário atualizado com sucesso!");
+            return "redirect:/cazio/utilizadores/todos-utilizadores";
+        } catch (Exception e) {
+            logger.error("Erro ao atualizar usuário", e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao atualizar usuário: " + e.getMessage());
+            return "redirect:/cazio/utilizadores/editar-utilizador/" + id;
+        }
+    }
+
+    @PostMapping("/editar-perfil")
+    public String atualizarPerfil(@Valid @ModelAttribute UsuarioAtualizacaoDTO atualizacaoDTO, 
+                                 RedirectAttributes redirectAttributes, 
+                                 Authentication authentication) {
+        try {
+            logger.info("Atualizando perfil próprio");
+            
+            UsuarioDTO usuarioAtual = usuarioService.buscarPorEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+            
+            atualizacaoDTO.setId(usuarioAtual.getId());
+            atualizacaoDTO.setTipo(usuarioAtual.getTipo()); // Mantém o tipo original
+            
+            usuarioService.atualizarProprioPerfil(usuarioAtual.getId(), atualizacaoDTO);
+            redirectAttributes.addFlashAttribute("mensagem", "Perfil atualizado com sucesso!");
+            return "redirect:/cazio/utilizadores/perfil-do-utilizador";
+        } catch (Exception e) {
+            logger.error("Erro ao atualizar perfil", e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao atualizar perfil: " + e.getMessage());
+            return "redirect:/cazio/utilizadores/editar-perfil";
         }
     }
 } 
